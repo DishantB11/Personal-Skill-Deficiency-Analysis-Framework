@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Career Analysis System</title>
+</head>
+<body style="text-align:center; font-family:Arial">
+
+    <h2>Enter Your Skills</h2>
+
+    <form method="POST" action="/analyze">
+
+        <h3>Skill Ratings (1–5)</h3>
+
+        Python: <input type="number" name="Python"><br>
+        Java: <input type="number" name="Java"><br>
+        JavaScript: <input type="number" name="JavaScript"><br>
+        SQL: <input type="number" name="SQL"><br>
+        DSA: <input type="number" name="DSA"><br>
+        Cloud: <input type="number" name="Cloud"><br>
+        DevOps: <input type="number" name="DevOps"><br>
+        Networking: <input type="number" name="Networking"><br>
+        DataAnalysis: <input type="number" name="DataAnalysis"><br>
+        Communication: <input type="number" name="Communication"><br>
+
+        <h3>Academic & Performance</h3>
+
+        CGPA: <input type="number" step="0.01" name="CGPA"><br>
+        Projects: <input type="number" name="Projects"><br>
+        EasySolved: <input type="number" name="EasySolved"><br>
+        MediumSolved: <input type="number" name="MediumSolved"><br>
+        HardSolved: <input type="number" name="HardSolved"><br><br>
+
+        <h3>Select Target Role (For Goal-Based Analysis)</h3>
+
+        <select name="target_role">
+            {% for role in roles %}
+                <option value="{{ role }}">{{ role }}</option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <div style="margin-top:20px;">
+
+            <button type="submit" name="mode" value="recommend">
+                Find Best Role
+            </button>
+
+            <button type="submit" name="mode" value="goal">
+                Analyze My Goal
+            </button>
+
+        </div>
+
+    </form>
+
+</body>
+</html>

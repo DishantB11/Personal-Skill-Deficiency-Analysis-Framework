@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Career Analysis</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .card:hover {
+    transform: translateY(-3px);
+    transition: 0.3s ease;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f9;
+    margin: 0;
+    padding: 20px;
+}
+
+h2 {
+    margin-top: 10px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    margin: 20px auto;
+    width: 85%;
+    border-radius: 10px;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    gap: 60px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.chart {
+    width: 350px;
+}
+
+table {
+    border-collapse: collapse;
+    margin: 20px auto;
+    width: 70%;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #2c3e50;
+    color: white;
+}
+
+.good {
+    color: green;
+    font-weight: bold;
+}
+
+.medium {
+    color: orange;
+    font-weight: bold;
+}
+
+.low {
+    color: red;
+    font-weight: bold;
+}
+
+button {
+    padding: 10px 18px;
+    border-radius: 6px;
+    border: none;
+    background-color: #2c3e50;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #1a252f;
+}
+
+a {
+    text-decoration: none;
+    color: #2c3e50;
+    font-weight: bold;
+}
+
+</style>
+</head>
+<body>
+
+<!-- HEADER CARD -->
+<div class="card">
+
+{% if mode == "recommend" %}
+<h2>Recommended Role: {{ role }}</h2>
+<h3>Model Confidence: {{ confidence }}%</h3>
+{% else %}
+<h2>Goal Analysis For: {{ role }}</h2>
+{% endif %}
+
+<h2>Readiness Score</h2>
+
+<div style="background:#ddd; border-radius:8px; width:80%; margin:15px auto; height:25px;">
+    <div style="
+        height:25px;
+        width:{{ readiness if readiness <= 100 else 100 }}%;
+        border-radius:8px;
+        background:
+        {% if readiness >= 75 %}
+            linear-gradient(90deg,#28a745,#5cd65c);
+        {% elif readiness >= 50 %}
+            linear-gradient(90deg,#ff9800,#ffc107);
+        {% else %}
+            linear-gradient(90deg,#dc3545,#ff6b6b);
+        {% endif %}
+        text-align:center;
+        color:white;
+        font-weight:bold;
+        line-height:25px;
+        transition:width 1s ease-in-out;
+    ">
+        {{ readiness }}%
+    </div>
+</div>
+
+{% if explanation %}
+<div style="margin-top:15px;">
+<strong>Why this role?</strong><br>
+{{ explanation }}
+</div>
+{% endif %}
+
+</div>
+
+<!-- TOP 3 CARD -->
+{% if mode == "recommend" and top_roles %}
+<div class="card">
+<h3>Top 3 Role Comparison</h3>
+
+<table>
+<tr>
+    <th>Role</th>
+    <th>ML Match %</th>
+    <th>Readiness %</th>
+</tr>
+
+{% for r, p in top_roles %}
+<tr>
+    <td>{{ r }}</td>
+    <td>
+<span style="background:#2c3e50;color:white;padding:4px 8px;border-radius:12px;">
+{{ p }}%
+</span>
+</td>
+    <td>{{ readiness_map[r] }}%</td>
+</tr>
+{% endfor %}
+
+</table>
+</div>
+{% endif %}
+
+<!-- GAP ANALYSIS CARD -->
+<div class="card">
+<h3>Skill Gap Analysis</h3>
+
+{% if gaps %}
+<ul>
+{% for skill,user,req in gaps %}
+<li style="color:#dc3545; font-weight:bold;">
+ {{ skill }} (You: {{ user }}/5 | Required: {{ req }}/5)
+</li>
+{% endfor %}
+</ul>
+{% else %}
+<h4>No Skill Gaps </h4>
+{% endif %}
+</div>
+
+<!-- RADAR CARD -->
+<div class="card">
+<h3>Skill Comparison</h3>
+
+<div class="container">
+
+<div class="chart">
+<h4>Required Skills</h4>
+<canvas id="requiredChart"></canvas>
+</div>
+
+<div class="chart">
+<h4>Your Skills</h4>
+<canvas id="userChart"></canvas>
+</div>
+
+</div>
+</div>
+
+<!-- PRACTICE CARD -->
+<div class="card">
+<h3>Practice Problems</h3>
+
+<form method="POST" action="/complete">
+<ul style="list-style:none; padding:0;">
+{% for problem in problems %}
+<li style="margin:10px 0; padding:10px; background:#f9f9f9; border-radius:6px;">
+    <input type="checkbox" name="completed" value="{{ problem.title }}">
+    <strong>{{ problem.title }}</strong>
+    ({{ problem.difficulty }})
+    - <a href="{{ problem.link }}" target="_blank">Solve</a>
+</li>
+{% endfor %}
+</ul>
+
+<input type="hidden" name="role" value="{{ role }}">
+<button type="submit">Update Progress</button>
+</form>
+</div>
+
+<br><a href="/">Go Back</a>
+
+<script>
+
+const userSkills = {{ user_skills | tojson }};
+const requiredSkills = {{ required_skills | tojson }};
+
+const labels = [
+"Python","Java","JavaScript","SQL",
+"DSA","Cloud","DevOps","Networking",
+"DataAnalysis","Communication"
+];
+
+new Chart(document.getElementById('requiredChart'), {
+type:'radar',
+data:{labels:labels,datasets:[{label:"Required",data:requiredSkills}]},
+options:{scales:{r:{min:0,max:5}}}
+});
+
+new Chart(document.getElementById('userChart'), {
+type:'radar',
+data:{labels:labels,datasets:[{label:"You",data:userSkills}]},
+options:{scales:{r:{min:0,max:5}}}
+});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Goal-Based Analysis</title>
+</head>
+<body style="text-align:center; font-family:Arial">
+
+    <h2>Goal-Based Analysis for {{ target_role }}</h2>
+
+    <h3>Skills Meeting Requirement:</h3>
+    <ul>
+    {% for skill, user, req in meets %}
+        <li>{{ skill }} (You: {{ user }}/5 | Required: {{ req }}/5)</li>
+    {% endfor %}
+    </ul>
+
+    <h3>Skills Below Requirement:</h3>
+    <ul>
+    {% for skill, user, req in gaps %}
+        <li style="color:red">
+            {{ skill }} (You: {{ user }}/5 | Required: {{ req }}/5)
+        </li>
+    {% endfor %}
+    </ul>
+
+    <a href="/">Go Back</a>
+
+</body>
+</html>
